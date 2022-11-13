@@ -1,3 +1,4 @@
 pandas==1.4.3
 numpy==1.19.5
 APScheduler==3.9.1
+bme280pi==1.1.0
