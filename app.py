@@ -7,6 +7,9 @@ from bme280pi import Sensor
 from apscheduler.schedulers.background import BackgroundScheduler
 import drawings
 
+#Crear carpeta data
+if not os.path.exists('data'):
+    os.mkdir('data')
 #Descargar datos si no hay
 if not os.listdir('data'):
     data_update()
