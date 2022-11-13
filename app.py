@@ -13,7 +13,7 @@ if not os.path.exists('data'):
     os.mkdir('data')
 #Descargar datos si no hay
 if not os.listdir('data'):
-    data_update()
+    conf.data_update()
 
 #Programado de la actualización/descarga de los datos de AEMET
 scheduler = BackgroundScheduler()
