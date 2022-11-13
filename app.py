@@ -1,10 +1,11 @@
 import curses
 import os
+import psutil
 from datetime import datetime
-import configuracion as conf
-from configuracion import data_update
 from bme280pi import Sensor
+from gpiozero import CPUTemperature
 from apscheduler.schedulers.background import BackgroundScheduler
+import configuracion as conf
 import drawings
 
 #Crear carpeta data
@@ -16,7 +17,7 @@ if not os.listdir('data'):
 
 #Programado de la actualización/descarga de los datos de AEMET
 scheduler = BackgroundScheduler()
-scheduler.add_job(data_update, 'cron', hour = '*', minute=15)
+scheduler.add_job(conf.data_update, 'cron', hour = '*', minute=15)
 scheduler.start()
 
 
@@ -59,6 +60,9 @@ def main(stdscr):
     
     today = main_window.subwin(9, 60, 20, 1)
     today.box()
+
+    rpimonitoring = main_window.subwin(5, 18, 1, 1)
+    rpimonitoring.box()
     
 
     while True:
@@ -66,16 +70,35 @@ def main(stdscr):
                            datetime.now().strftime('%Y-%m-%d %H:%M'), 
                            COLOR_3 | curses.A_STANDOUT)
         
-#Importación de datos
+        #Importación de datos
         today_data = {i:conf.daily_to_dict(period=i, today=True) for i in conf.PERIODS}
         tomorrow_data = conf.daily_to_dict(period='00-24', today=False)
         last_data = conf.last_to_dict()
-#Lectura de datos del BME280
+        #Lectura de datos del BME280
         temperature = round(sensor.get_temperature(), 1)
         humidity = round(sensor.get_humidity(), 1)
         pressure = round(sensor.get_pressure(), 1)
+        #Lectura métricas rpi
+        cpu_temp = round( CPUTemperature().temperature, 1)
+        cpu_usage = psutil.cpu_percent()
+        ram_usage = psutil.virtual_memory().percent
+
+        #Panel monitorización rpi
+        rpimonitoring.addstr(1,1, "CPU Usage: ", COLOR_2 | curses.A_BOLD)
+        rpimonitoring.addstr(1,11, str(cpu_usage) +
+                            "%",
+                            COLOR_3 | curses.A_BOLD)
+        rpimonitoring.addstr(2,1, "RAM Usage: ", COLOR_2 | curses.A_BOLD)
+        rpimonitoring.addstr(2,11, str(ram_usage) +
+                            "%",
+                            COLOR_3 | curses.A_BOLD)
+        rpimonitoring.addstr(3,1, "CPU Temp: ", COLOR_2 | curses.A_BOLD)
+        rpimonitoring.addstr(3,11,
+                            str(cpu_temp) + 
+                            "ºC",
+                            COLOR_3 | curses.A_BOLD)
         
-#Panel con los últimos registros de la estación cercana
+        #Panel con los últimos registros de la estación cercana
         last.addstr(0,1, last_data['fint'])
         last.addstr(1,1, "Temp: ", COLOR_2 | curses.A_BOLD)
         last.addstr(1,12, str(last_data['ta']) + " ºC", COLOR_3 | curses.A_BOLD)
@@ -88,7 +111,7 @@ def main(stdscr):
         last.addstr(5,1, "Racha Max: ", COLOR_2 | curses.A_BOLD)
         last.addstr(5,12, str(last_data['vmax']) + " km/h", COLOR_3 | curses.A_BOLD)
 
-#Panel BME280
+        #Panel BME280
         bme280.addstr(0,1, "BME 280")
         bme280.addstr(1,1, "Temp: ", COLOR_2 | curses.A_BOLD)
         bme280.addstr(1,6, str(temperature) + " ºC", COLOR_3 | curses.A_BOLD)
@@ -97,7 +120,7 @@ def main(stdscr):
         bme280.addstr(3,1, "Pres: ", COLOR_2 | curses.A_BOLD)
         bme280.addstr(3,6, str(pressure) + " hPa", COLOR_3 | curses.A_BOLD)
 
-#Panel con la previsión de mañana        
+        #Panel con la previsión de mañana        
         tomorrow.addstr(0,1,"Mañana,")
         tomorrow.addstr(0,8, tomorrow_data['fecha'])
         tomorrow.addstr(1,1, "T. Max/Min: ", COLOR_2 | curses.A_BOLD)
@@ -136,7 +159,7 @@ def main(stdscr):
                         tomorrow_data['estadoCielo']['descripcion'],
                         COLOR_3 | curses.A_BOLD)
 
-#Panel con la previsión de hoy
+        #Panel con la previsión de hoy
         today.addstr(0,1, "Hoy, ")
         today.addstr(0, 5, today_data['00-06']['fecha'])
         today.addstr(2,1, "T. Max/Min: ", COLOR_2 | curses.A_BOLD)
@@ -243,11 +266,12 @@ def main(stdscr):
                         COLOR_3 | curses.A_BOLD)
   
         
-#Actualización de paneles
+        #Actualización de paneles
         main_window.refresh()
         last.refresh()
         today.refresh()
         tomorrow.refresh()
+        rpimonitoring.refresh()
         main_window.getch() 
 
 
