@@ -21,7 +21,7 @@ scheduler.add_job(conf.data_update, 'cron', hour = '*', minute=15)
 scheduler.start()
 
 
-REFRESH_TIME = 1000 * 60 * 1#Milisegundos
+REFRESH_TIME = 1000 *60 * 1#Milisegundos
 
 #Inicialización de curses y creación de paletas de color
 stdscr = curses.initscr()
@@ -79,23 +79,21 @@ def main(stdscr):
         humidity = round(sensor.get_humidity(), 1)
         pressure = round(sensor.get_pressure(), 1)
         #Lectura métricas rpi
-        cpu_temp = round( CPUTemperature().temperature, 1)
-        cpu_usage = psutil.cpu_percent()
-        ram_usage = psutil.virtual_memory().percent
+        cpu_temp = round(CPUTemperature().temperature, 1)
+        cpu_usage = round(psutil.cpu_percent(), 1)
+        ram_usage = round(psutil.virtual_memory().percent, 1)
 
         #Panel monitorización rpi
-        rpimonitoring.addstr(1,1, "CPU Usage: ", COLOR_2 | curses.A_BOLD)
-        rpimonitoring.addstr(1,11, str(cpu_usage) +
-                            "%",
+        rpimonitoring.addstr(1,1, "CPU Usage:", COLOR_2 | curses.A_BOLD)
+        rpimonitoring.addstr(1,11,
+                            str(cpu_usage) + "%",
                             COLOR_3 | curses.A_BOLD)
-        rpimonitoring.addstr(2,1, "RAM Usage: ", COLOR_2 | curses.A_BOLD)
-        rpimonitoring.addstr(2,11, str(ram_usage) +
-                            "%",
+        rpimonitoring.addstr(2,1, "RAM Usage:", COLOR_2 | curses.A_BOLD)
+        rpimonitoring.addstr(2,11, str(ram_usage) + "%",
                             COLOR_3 | curses.A_BOLD)
-        rpimonitoring.addstr(3,1, "CPU Temp: ", COLOR_2 | curses.A_BOLD)
+        rpimonitoring.addstr(3,1, "CPU Temp:", COLOR_2 | curses.A_BOLD)
         rpimonitoring.addstr(3,11,
-                            str(cpu_temp) + 
-                            "ºC",
+                            str(cpu_temp) + "ºC",
                             COLOR_3 | curses.A_BOLD)
         
         #Panel con los últimos registros de la estación cercana
@@ -270,6 +268,7 @@ def main(stdscr):
         main_window.refresh()
         last.refresh()
         today.refresh()
+        bme280.refresh()
         tomorrow.refresh()
         rpimonitoring.refresh()
         main_window.getch() 
