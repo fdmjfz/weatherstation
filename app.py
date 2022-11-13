@@ -17,7 +17,7 @@ scheduler.add_job(func=data_update, trigger='interval', minutes=60)
 scheduler.start()
 
 
-REFRESH_TIME = 1000 * 60 * 5#Milisegundos
+REFRESH_TIME = 1000 * 60 * 1#Milisegundos
 
 #Inicialización de curses y creación de paletas de color
 stdscr = curses.initscr()
