@@ -16,7 +16,7 @@ if not os.listdir('data'):
 
 #Programado de la actualización/descarga de los datos de AEMET
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=data_update, trigger='interval', minutes=60)
+scheduler.add_job(data_update, 'cron', hour = '*', minute=15)
 scheduler.start()
 
 
